@@ -2,6 +2,11 @@ import Link from "next/link";
 
 import { signOutAction } from "@/app/actions/auth-actions";
 
+const signOutFormAction = async (_formData: FormData) => {
+  "use server";
+  await signOutAction();
+};
+
 export default function Topbar() {
   return (
     <header className="sticky top-0 z-20 flex items-center justify-between border-b border-border/70 bg-surface-1/80 px-6 py-4 backdrop-blur-xl">
@@ -16,7 +21,7 @@ export default function Topbar() {
         <Link className="btn btn-primary" href="/scores">
           Update scores
         </Link>
-        <form action={signOutAction}>
+        <form action={signOutFormAction}>
           <button className="btn btn-secondary" type="submit">
             Sign out
           </button>
