@@ -7,7 +7,7 @@ export function getStripe() {
   }
 
   return new Stripe(key, {
-    apiVersion: "2024-12-18.acacia",
+    apiVersion: "2024-06-20",
     typescript: true,
   });
 }
