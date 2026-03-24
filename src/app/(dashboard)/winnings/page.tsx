@@ -1,9 +1,11 @@
 import Card from "@/components/ui/Card";
 import WinningsTable from "@/components/winnings/WinningsTable";
 import ProofUpload from "@/components/winnings/ProofUpload";
+import SubscriptionGate from "@/components/auth/SubscriptionGate";
 import { requireUser } from "@/lib/auth";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/format";
+import { getSubscriptionStatus } from "@/lib/subscription";
 
 export default async function WinningsPage() {
   const user = await requireUser();
@@ -11,6 +13,8 @@ export default async function WinningsPage() {
   if (!supabase) {
     throw new Error("Supabase not configured");
   }
+  const subscriptionStatus = await getSubscriptionStatus(user?.id || "");
+  const isSubscriber = subscriptionStatus === "active";
   const { data: winners } = await supabase
     .from("winners")
     .select("id, matches, prize_amount, status, proof_url, draw:draw_id(month)")
@@ -46,10 +50,17 @@ export default async function WinningsPage() {
           Track winning tiers and upload proof for verification.
         </p>
         <div className="mt-6">
-          <WinningsTable winnings={tableRows} />
+          {isSubscriber ? (
+            <WinningsTable winnings={tableRows} />
+          ) : (
+            <p className="text-sm text-text-muted">
+              No winnings yet. Subscribe to start participating.
+            </p>
+          )}
         </div>
       </Card>
-      {uploadRows.map((row) => (
+      {isSubscriber &&
+        uploadRows.map((row) => (
           <Card key={row.winnerId} className="p-6">
             <h3 className="text-[22px] font-semibold">Upload proof</h3>
             <p className="mt-2 text-sm text-text-secondary">
@@ -60,6 +71,11 @@ export default async function WinningsPage() {
             </div>
           </Card>
         ))}
+      {!isSubscriber && (
+        <Card className="p-6">
+          <SubscriptionGate />
+        </Card>
+      )}
     </div>
   );
 }

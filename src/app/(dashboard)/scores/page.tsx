@@ -1,8 +1,10 @@
 import Card from "@/components/ui/Card";
 import ScoreForm from "@/components/scores/ScoreForm";
 import ScoreBall from "@/components/scores/ScoreBall";
+import SubscriptionGate from "@/components/auth/SubscriptionGate";
 import { requireUser } from "@/lib/auth";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { getSubscriptionStatus } from "@/lib/subscription";
 
 export default async function ScoresPage() {
   const user = await requireUser();
@@ -10,6 +12,8 @@ export default async function ScoresPage() {
   if (!supabase) {
     throw new Error("Supabase not configured");
   }
+  const subscriptionStatus = await getSubscriptionStatus(user?.id || "");
+  const isSubscriber = subscriptionStatus === "active";
   const { data: scores } = await supabase
     .from("scores")
     .select("id, value")
@@ -25,8 +29,13 @@ export default async function ScoresPage() {
           Add a score between 1 and 45. Only the latest five are retained.
         </p>
         <div className="mt-6">
-          <ScoreForm />
+          <ScoreForm disabled={!isSubscriber} />
         </div>
+        {!isSubscriber && (
+          <div className="mt-6">
+            <SubscriptionGate />
+          </div>
+        )}
       </Card>
       <Card className="p-6">
         <h2 className="text-[22px] font-semibold">Your rolling scores</h2>

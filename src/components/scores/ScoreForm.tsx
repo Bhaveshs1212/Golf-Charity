@@ -7,13 +7,17 @@ import Input from "@/components/ui/Input";
 import { addScoreAction } from "@/app/actions/score-actions";
 import { SCORE_MAX, SCORE_MIN } from "@/lib/constants";
 
-export default function ScoreForm() {
+export default function ScoreForm({ disabled }: { disabled?: boolean }) {
   const [value, setValue] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (disabled) {
+      setMessage("Subscribe to unlock score submissions.");
+      return;
+    }
     setMessage(null);
 
     startTransition(async () => {
@@ -38,9 +42,10 @@ export default function ScoreForm() {
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="Enter score 1-45"
+          disabled={disabled}
         />
       </div>
-      <Button disabled={isPending}>Log score</Button>
+      <Button disabled={isPending || disabled}>Log score</Button>
       {message && <p className="text-sm text-text-muted">{message}</p>}
     </form>
   );

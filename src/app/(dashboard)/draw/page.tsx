@@ -1,8 +1,10 @@
 import Card from "@/components/ui/Card";
 import DrawNumbers from "@/components/draw/DrawNumbers";
 import Badge from "@/components/ui/Badge";
+import SubscriptionGate from "@/components/auth/SubscriptionGate";
 import { requireUser } from "@/lib/auth";
 import { getServerSupabase } from "@/lib/supabase/server";
+import { getSubscriptionStatus } from "@/lib/subscription";
 
 export default async function DrawPage() {
   const user = await requireUser();
@@ -10,6 +12,8 @@ export default async function DrawPage() {
   if (!supabase) {
     throw new Error("Supabase not configured");
   }
+  const subscriptionStatus = await getSubscriptionStatus(user?.id || "");
+  const isSubscriber = subscriptionStatus === "active";
   const { data: draw } = await supabase
     .from("draws")
     .select("id, numbers, month")
@@ -60,20 +64,31 @@ export default async function DrawPage() {
           Matches are calculated against your rolling five scores.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
-          {matches.map((match: number) => (
-            <span
-              key={match}
-              className="rounded-full border border-border/70 bg-surface-3/70 px-4 py-2 text-sm font-semibold text-success"
-            >
-              {match}
+          {isSubscriber ? (
+            matches.map((match: number) => (
+              <span
+                key={match}
+                className="rounded-full border border-border/70 bg-surface-3/70 px-4 py-2 text-sm font-semibold text-success"
+              >
+                {match}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm text-text-muted">
+              Subscribe to participate in this month's draw.
             </span>
-          ))}
-          {matches.length === 0 && (
+          )}
+          {isSubscriber && matches.length === 0 && (
             <span className="text-sm text-text-muted">
               No matches this month.
             </span>
           )}
         </div>
+        {!isSubscriber && (
+          <div className="mt-6">
+            <SubscriptionGate />
+          </div>
+        )}
       </Card>
     </div>
   );
