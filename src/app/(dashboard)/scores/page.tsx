@@ -7,6 +7,9 @@ import { getServerSupabase } from "@/lib/supabase/server";
 export default async function ScoresPage() {
   const user = await requireUser();
   const supabase = getServerSupabase();
+  if (!supabase) {
+    throw new Error("Supabase not configured");
+  }
   const { data: scores } = await supabase
     .from("scores")
     .select("id, value")
