@@ -4,6 +4,8 @@ import SubscriptionGate from "@/components/auth/SubscriptionGate";
 import { requireUser } from "@/lib/auth";
 import { getSubscriptionStatus } from "@/lib/subscription";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardLayout({
   children,
 }: {
