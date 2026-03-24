@@ -1,7 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-import { env } from "@/lib/env";
 
 type CookieToSet = {
   name: string;
@@ -34,7 +33,12 @@ export async function middleware(request: NextRequest) {
     url.pathname.startsWith(prefix),
   );
 
-  if (!requiresAuth || !env.supabaseUrl || !env.supabaseAnonKey) {
+  const supabaseUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const supabaseAnonKey =
+    process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_KEY || "";
+
+  if (!requiresAuth || !supabaseUrl || !supabaseAnonKey) {
     return NextResponse.next();
   }
 
@@ -44,7 +48,7 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  const supabase = createServerClient(env.supabaseUrl, env.supabaseAnonKey, {
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();
